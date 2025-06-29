@@ -21,6 +21,7 @@ func NewDaemon() *Daemon {
 	flagsBrokerUsername := flag.String("u", "", "Broker username")
 	flagsBrokerPassword := flag.String("p", "", "Broker password")
 	flagsTopicPrefix := flag.String("t", "", "Topic prefix")
+	flagsOverrideHostname := flag.String("h", "", "Hostname override")
 	flag.Parse()
 
 	hostname, err := os.Hostname()
@@ -28,6 +29,11 @@ func NewDaemon() *Daemon {
 		fmt.Printf("Error getting hostname: %v\n", err)
 		os.Exit(1)
 	}
+
+	if *flagsOverrideHostname != "" {
+		hostname = *flagsOverrideHostname
+	}
+
 	topicPrefix := fmt.Sprintf("%s/%s", *flagsTopicPrefix, hostname)
 
 	d := Daemon{
