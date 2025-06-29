@@ -30,5 +30,5 @@ func (d *Daemon) PublishMemoryUsage() {
 		return
 	}
 
-	d.MQTTPublish(d.CreateTopic("test"), jsonData)
+	d.MQTTPublish(d.CreateTopic("memory"), jsonData)
 }
