@@ -17,13 +17,13 @@ func (d *Daemon) MQTTPublish(topic string, jsonData []byte) {
 
 	client := MQTT.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		fmt.Printf("MQTT connection error: %v\n", token.Error())
+		//fmt.Printf("MQTT connection error: %v\n", token.Error())
 		return
 	}
 	defer client.Disconnect(250)
 
 	if token := client.Publish(topic, 0, false, jsonData); token.Wait() && token.Error() != nil {
-		fmt.Printf("MQTT publish error: %v\n", token.Error())
+		//fmt.Printf("MQTT publish error: %v\n", token.Error())
 		return
 	}
 }
