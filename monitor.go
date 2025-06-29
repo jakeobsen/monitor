@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -13,16 +14,42 @@ type Daemon struct {
 	MQTTUsername    string
 	MQTTPassword    string
 	MQTTTopicPrefix string
+	EnvVarName      string
 }
 
 func NewDaemon() *Daemon {
-	flagsBrokerAddress := flag.String("b", "", "Broker address")
-	flagsBrokerPort := flag.Int("P", 1883, "Broker port")
-	flagsBrokerUsername := flag.String("u", "", "Broker username")
-	flagsBrokerPassword := flag.String("p", "", "Broker password")
-	flagsTopicPrefix := flag.String("t", "", "Topic prefix")
-	flagsOverrideHostname := flag.String("h", "", "Hostname override")
+	envBrokerAddress := os.Getenv("MQTT_SERVER")
+	envBrokerPort := 1883
+	if port := os.Getenv("MQTT_PORT"); port != "" {
+		if p, err := strconv.Atoi(port); err == nil {
+			envBrokerPort = p
+		}
+	}
+	envBrokerUsername := os.Getenv("MQTT_USERNAME")
+	envBrokerPassword := os.Getenv("MQTT_PASSWORD")
+	envTopicPrefix := os.Getenv("TOPIC_PREFIX")
+	envOverrideHostname := os.Getenv("HOSTNAME")
+
+	flagsBrokerAddress := flag.String("b", envBrokerAddress, "Broker address")
+	flagsBrokerPort := flag.Int("P", envBrokerPort, "Broker port")
+	flagsBrokerUsername := flag.String("u", envBrokerUsername, "Broker username")
+	flagsBrokerPassword := flag.String("p", envBrokerPassword, "Broker password")
+	flagsTopicPrefix := flag.String("t", envTopicPrefix, "Topic prefix")
+	flagsOverrideHostname := flag.String("h", envOverrideHostname, "Hostname override")
 	flag.Parse()
+
+	if *flagsBrokerUsername == "" {
+		fmt.Println("Error: MQTT username is required")
+		os.Exit(1)
+	}
+	if *flagsBrokerPassword == "" {
+		fmt.Println("Error: MQTT password is required")
+		os.Exit(1)
+	}
+	if *flagsTopicPrefix == "" {
+		fmt.Println("Error: Topic prefix is required")
+		os.Exit(1)
+	}
 
 	hostname, err := os.Hostname()
 	if err != nil {
