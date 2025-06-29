@@ -49,8 +49,8 @@ func NewDaemon() *Daemon {
 
 func (d *Daemon) Run() {
 	for {
-		d.PublishMemoryUsage()
-
+		go d.PublishMemoryUsage()
+		go d.PublishCPUUsage()
 		time.Sleep(time.Second * 5)
 	}
 }
