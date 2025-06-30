@@ -4,10 +4,11 @@ cd cmd/monitor
 go build
 cd ../../
 rm -rf monitor_1.0
-mkdir -p monitor_1.0/DEBIAN/ monitor_1.0/usr/sbin/ monitor_1.0/etc/systemd/system/
+mkdir -p monitor_1.0/DEBIAN/ monitor_1.0/usr/sbin/ monitor_1.0/etc/systemd/system/ monitor_1.0/etc/monitor/
 
 cd monitor_1.0
 mv ../cmd/monitor/monitor usr/sbin/monitor
+cp ../monitor.example.json etc/monitor/monitor.json
 
 cat>DEBIAN/control<<EOF
 Package: monitor
@@ -28,7 +29,7 @@ After=network.target
 Type=simple
 User=root
 Group=root
-ExecStart=/usr/sbin/monitor
+ExecStart=/usr/sbin/monitor -c /etc/monitor/monitor.json
 Restart=on-failure
 
 [Install]

@@ -1,55 +1,40 @@
 package monitor
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
 	"time"
 )
 
 type Daemon struct {
-	MQTTBroker      string
-	MQTTPort        int
-	MQTTUsername    string
-	MQTTPassword    string
-	MQTTTopicPrefix string
-	EnvVarName      string
+	System struct {
+		Hostname string `json:"hostname"`
+	}
+	MQTT struct {
+		Server      string `json:"server"`
+		Port        int    `json:"port"`
+		Username    string `json:"username"`
+		Password    string `json:"password"`
+		TopicPrefix string `json:"topicPrefix"`
+	} `json:"mqtt"`
+	Modules struct {
+		Disk struct {
+			Enabled bool `json:"enabled"`
+		} `json:"disk"`
+		Memory struct {
+			Enabled bool `json:"enabled"`
+		} `json:"memory"`
+		CPU struct {
+			Enabled bool `json:"enabled"`
+		} `json:"cpu"`
+	} `json:"modules"`
 }
 
 func NewDaemon() *Daemon {
-	envBrokerAddress := os.Getenv("MQTT_SERVER")
-	envBrokerPort := 1883
-	if port := os.Getenv("MQTT_PORT"); port != "" {
-		if p, err := strconv.Atoi(port); err == nil {
-			envBrokerPort = p
-		}
-	}
-	envBrokerUsername := os.Getenv("MQTT_USERNAME")
-	envBrokerPassword := os.Getenv("MQTT_PASSWORD")
-	envTopicPrefix := os.Getenv("TOPIC_PREFIX")
-	envOverrideHostname := os.Getenv("HOSTNAME")
-
-	flagsBrokerAddress := flag.String("b", envBrokerAddress, "Broker address")
-	flagsBrokerPort := flag.Int("P", envBrokerPort, "Broker port")
-	flagsBrokerUsername := flag.String("u", envBrokerUsername, "Broker username")
-	flagsBrokerPassword := flag.String("p", envBrokerPassword, "Broker password")
-	flagsTopicPrefix := flag.String("t", envTopicPrefix, "Topic prefix")
-	flagsOverrideHostname := flag.String("h", envOverrideHostname, "Hostname override")
+	configFilename := flag.String("c", "monitor.json", "Path to config file")
 	flag.Parse()
-
-	if *flagsBrokerUsername == "" {
-		fmt.Println("Error: MQTT username is required")
-		os.Exit(1)
-	}
-	if *flagsBrokerPassword == "" {
-		fmt.Println("Error: MQTT password is required")
-		os.Exit(1)
-	}
-	if *flagsTopicPrefix == "" {
-		fmt.Println("Error: Topic prefix is required")
-		os.Exit(1)
-	}
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -57,27 +42,30 @@ func NewDaemon() *Daemon {
 		os.Exit(1)
 	}
 
-	if *flagsOverrideHostname != "" {
-		hostname = *flagsOverrideHostname
+	file, err := os.ReadFile(*configFilename)
+	if err != nil {
 	}
 
-	topicPrefix := fmt.Sprintf("%s/%s", *flagsTopicPrefix, hostname)
-
-	d := Daemon{
-		MQTTBroker:      *flagsBrokerAddress,
-		MQTTPort:        *flagsBrokerPort,
-		MQTTUsername:    *flagsBrokerUsername,
-		MQTTPassword:    *flagsBrokerPassword,
-		MQTTTopicPrefix: topicPrefix,
+	var d Daemon
+	if err := json.Unmarshal(file, &d); err != nil {
 	}
+
+	d.System.Hostname = hostname
 
 	return &d
 }
 
 func (d *Daemon) Run() {
 	for {
-		go d.PublishMemoryUsage()
-		go d.PublishCPUUsage()
+		if d.Modules.Memory.Enabled == true {
+			go d.PublishMemoryUsage()
+		}
+		if d.Modules.CPU.Enabled == true {
+			go d.PublishCPUUsage()
+		}
+		if d.Modules.Disk.Enabled == true {
+
+		}
 		time.Sleep(time.Second * 5)
 	}
 }

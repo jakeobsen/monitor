@@ -6,14 +6,14 @@ import (
 )
 
 func (d *Daemon) CreateTopic(topic string) string {
-	return fmt.Sprintf("%s/%s", d.MQTTTopicPrefix, topic)
+	return fmt.Sprintf("%s/%s", d.MQTT.TopicPrefix, topic)
 }
 
 func (d *Daemon) MQTTPublish(topic string, jsonData []byte) {
 	opts := MQTT.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", d.MQTTBroker, d.MQTTPort))
-	opts.SetUsername(d.MQTTUsername)
-	opts.SetPassword(d.MQTTPassword)
+	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", d.MQTT.Server, d.MQTT.Port))
+	opts.SetUsername(d.MQTT.Username)
+	opts.SetPassword(d.MQTT.Password)
 
 	client := MQTT.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
