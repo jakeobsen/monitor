@@ -6,7 +6,7 @@ import (
 )
 
 func (d *Daemon) CreateTopic(topic string) string {
-	return fmt.Sprintf("%s/%s", d.MQTT.TopicPrefix, topic)
+	return fmt.Sprintf("%s/%s/%s", d.MQTT.TopicPrefix, d.System.Hostname, topic)
 }
 
 func (d *Daemon) MQTTPublish(topic string, jsonData []byte) {
@@ -14,6 +14,8 @@ func (d *Daemon) MQTTPublish(topic string, jsonData []byte) {
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", d.MQTT.Server, d.MQTT.Port))
 	opts.SetUsername(d.MQTT.Username)
 	opts.SetPassword(d.MQTT.Password)
+
+	//fmt.Printf("Publishing to %s: %s\n", topic, jsonData)
 
 	client := MQTT.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {

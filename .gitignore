@@ -2,3 +2,5 @@
 cmd/monitor/monitor
 monitor_1.0*
 monitor.json
+monitor.prod.json
+monitor.dev.json

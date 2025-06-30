@@ -64,7 +64,7 @@ func (d *Daemon) Run() {
 			go d.PublishCPUUsage()
 		}
 		if d.Modules.Disk.Enabled == true {
-
+			go d.PublishDiskUsage()
 		}
 		time.Sleep(time.Second * 5)
 	}

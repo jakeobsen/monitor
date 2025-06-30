@@ -39,6 +39,11 @@ EOF
 cd ..
 
 rm monitor_1.0.deb
-sudo apt-get -y --purge remove monitor
 dpkg-deb --build monitor_1.0/
+
+sudo systemctl stop monitor
+sudo apt-get -y --purge remove monitor
 sudo dpkg -i monitor_1.0.deb
+cp monitor.prod.json /etc/monitor/monitor.json
+sudo systemctl daemon-reload
+sudo systemctl restart monitor
